@@ -77,6 +77,15 @@ abstract class JsonDownloader<T> {
         }
         bufferedReader.close();
 
-        return jsonContent.toString();
+        JSONObject jsonObject = new JSONObject(jsonContent.toString());
+        if (this.requestHeaders.contenturl) {
+            jsonObject.put('content_url', this.requestHeaders.contenturl)
+        }
+
+
+        String jsonText = jsonObject.toJSONString();
+
+		System.out.println(jsonText);
+        return jsonText
     }
 }
