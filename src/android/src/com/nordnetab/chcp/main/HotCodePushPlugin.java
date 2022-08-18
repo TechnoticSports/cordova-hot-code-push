@@ -644,7 +644,7 @@ public class HotCodePushPlugin extends CordovaPlugin {
         parser.parse(cordova.getActivity());
         String url = parser.getLaunchUrl();
 
-        startingPage = url.replace(LOCAL_ASSETS_FOLDER, "");
+        startingPage = url.replace(LOCAL_ASSETS_FOLDER, "").replace("https://localhost/", "");
 
         return startingPage;
     }
