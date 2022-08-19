@@ -3,6 +3,7 @@ package com.nordnetab.chcp.main.network;
 import com.nordnetab.chcp.main.utils.URLConnectionHelper;
 import com.nordnetab.chcp.main.utils.URLUtility;
 
+import org.json.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -20,6 +21,7 @@ import java.util.Map;
 abstract class JsonDownloader<T> {
 
     private final String downloadUrl;
+    private final String requestContentUrl;
     private final Map<String, String> requestHeaders;
 
     /**
@@ -36,8 +38,15 @@ abstract class JsonDownloader<T> {
      * @param url url from which JSON should be loaded
      */
     public JsonDownloader(final String url, final Map<String, String> requestHeaders) {
-        this.downloadUrl = url;
-        this.requestHeaders = requestHeaders;
+      this.downloadUrl = url;
+      this.requestHeaders = requestHeaders;
+      if (requestHeaders != null && requestHeaders.get("X-contenturl") != null) {
+        System.out.println(requestHeaders.get("X-contenturl"));
+        this.requestContentUrl = requestHeaders.get("X-contenturl");
+      } else {
+        this.requestContentUrl = null;
+      }
+
     }
 
     /**
@@ -65,7 +74,6 @@ abstract class JsonDownloader<T> {
 
     private String downloadJson() throws Exception {
         final StringBuilder jsonContent = new StringBuilder();
-
         final URLConnection urlConnection = URLConnectionHelper.createConnectionToURL(downloadUrl, requestHeaders);
         final InputStreamReader streamReader = new InputStreamReader(urlConnection.getInputStream());
         final BufferedReader bufferedReader = new BufferedReader(streamReader);
@@ -77,15 +85,17 @@ abstract class JsonDownloader<T> {
         }
         bufferedReader.close();
 
-        JSONObject jsonObject = new JSONObject(jsonContent.toString());
-        if (this.requestHeaders.contenturl) {
-            jsonObject.put('content_url', this.requestHeaders.contenturl)
+        final String jsonString = jsonContent.toString();
+        if (jsonString != null) {
+          JSONObject obj = new JSONObject(jsonString);
+          if (this.requestContentUrl != null) {
+            obj.put("content_url", this.requestContentUrl);
+          }
+
+          String jsonText = obj.toString();
+
+          return jsonText;
         }
-
-
-        String jsonText = jsonObject.toJSONString();
-
-		System.out.println(jsonText);
-        return jsonText
+        return jsonString;
     }
 }
